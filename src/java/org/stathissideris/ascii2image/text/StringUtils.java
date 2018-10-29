@@ -1,22 +1,27 @@
 /**
  * ditaa - Diagrams Through Ascii Art
- *
+ * <p>
  * Copyright (C) 2004-2011 Efstathios Sideris
- *
+ * <p>
  * ditaa is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
- *
+ * <p>
  * ditaa is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public
  * License along with ditaa.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.stathissideris.ascii2image.text;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author sideris
@@ -61,7 +66,6 @@ public class StringUtils {
   }
 
   /**
-   *
    * Converts the first character of <code>string</code> into a capital letter
    *
    * @param string
@@ -172,5 +176,28 @@ public class StringUtils {
     System.out.println(" ext: " + StringUtils.getExtension(path));
 
 
+  }
+
+  public static Iterator<String> createTextSplitter(Pattern pattern, CharSequence s) {
+    return new Iterator<String>() {
+      Pattern regex = pattern;
+      CharSequence rest = s;
+
+      @Override
+      public boolean hasNext() {
+        return rest.length() > 0;
+      }
+
+      @Override
+      public String next() {
+        Matcher m = regex.matcher(rest);
+        if (m.find()) {
+          String ret = m.group(1);
+          rest = rest.subSequence(ret.length(), rest.length());
+          return ret;
+        }
+        throw new NoSuchElementException();
+      }
+    };
   }
 }

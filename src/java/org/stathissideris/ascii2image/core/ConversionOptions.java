@@ -29,9 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
- *
  * @author Efstathios Sideris
  */
 public class ConversionOptions {
@@ -49,8 +49,10 @@ public class ConversionOptions {
   public ConversionOptions() {
   }
 
-  /** Parse a color from a 6- or 8-digit hex string.  For example, FF0000 is red.
-   *  If eight digits, last two digits are alpha. */
+  /**
+   * Parse a color from a 6- or 8-digit hex string.  For example, FF0000 is red.
+   * If eight digits, last two digits are alpha.
+   */
   public static Color parseColor(String hexString) {
     if (hexString.length() == 6) {
       return new Color(Integer.parseInt(hexString, 16));
@@ -80,6 +82,7 @@ public class ConversionOptions {
 
     processingOptions.setAllCornersAreRound(cmdLine.hasOption("round-corners"));
     processingOptions.setPerformSeparationOfCommonEdges(!cmdLine.hasOption("no-separation"));
+    processingOptions.enableLaTeXmath(cmdLine.hasOption("latex-math"));
     renderingOptions.setAntialias(!cmdLine.hasOption("no-antialias"));
     renderingOptions.setFixedSlope(cmdLine.hasOption("fixed-slope"));
 
@@ -106,6 +109,10 @@ public class ConversionOptions {
       new String(new byte[2], encoding);
       processingOptions.setCharacterEncoding(encoding);
     }
+
+    if (cmdLine.hasOption("latex"))
+      processingOptions.enableLaTeXmath(
+          Objects.equals(cmdLine.getOptionValue("latex", "no"), "yes"));
 
     if (cmdLine.hasOption("svg")) {
       renderingOptions.setImageType(RenderingOptions.ImageType.SVG);
