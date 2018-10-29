@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.scilab.forge.jlatexmath.TeXConstants;
 import org.scilab.forge.jlatexmath.TeXFormula;
 import org.scilab.forge.jlatexmath.TeXIcon;
+import org.stathissideris.ascii2image.core.CommandLineConverter;
 import org.stathissideris.ascii2image.graphics.DiagramText;
 import org.stathissideris.ascii2image.text.StringUtils;
 import org.stathissideris.ascii2image.text.TextGrid;
@@ -142,4 +143,8 @@ public class Sandbox {
       System.out.println(i.next());
   }
 
+  @Test
+  public void renderLatexAsciiArt() {
+    CommandLineConverter.main(new String[] { "tests/text/art-latexmath-1.txt", "-o", "--latex-math" });
+  }
 }
