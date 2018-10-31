@@ -1,5 +1,6 @@
 package sandbox;
 
+import com.github.dakusui.crest.Crest;
 import org.junit.Test;
 import org.scilab.forge.jlatexmath.TeXConstants;
 import org.scilab.forge.jlatexmath.TeXFormula;
@@ -19,9 +20,13 @@ import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.function.Predicate;
 
+import static com.github.dakusui.crest.Crest.asObject;
 import static com.github.dakusui.crest.Crest.asString;
 import static com.github.dakusui.crest.Crest.assertThat;
+import static com.github.dakusui.crest.Crest.callOn;
+import static java.lang.String.format;
 
 public class Sandbox {
   @Test
@@ -91,7 +96,7 @@ public class Sandbox {
           }
 
         }
-        percentage = ((double) count * 100) / sizeA;
+        percentage = ((double) count) / sizeA;
       } else {
         System.out.println("Both the images are not of same size");
       }
@@ -144,7 +149,70 @@ public class Sandbox {
   }
 
   @Test
-  public void renderLatexAsciiArt() {
+  public void renderAsLatexAsciiArt() {
     CommandLineConverter.main(new String[] { "tests/text/art-latexmath-1.txt", "-o", "--latex-math" });
+  }
+
+  @Test
+  public void renderAsNonLatexAsciiArt() {
+    CommandLineConverter.main(new String[] { "tests/text/art-latexmath-1.txt", "-o" });
+  }
+
+  public static BufferedImage getDifferenceImage(BufferedImage img1, BufferedImage img2) {
+    // convert images to pixel arrays...
+    final int w = img1.getWidth(),
+        h = img1.getHeight(),
+        highlight = Color.MAGENTA.getRGB();
+    final int[] p1 = img1.getRGB(0, 0, w, h, null, 0, w);
+    final int[] p2 = img2.getRGB(0, 0, w, h, null, 0, w);
+    // compare img1 to img2, pixel by pixel. If different, highlight img1's pixel...
+    for (int i = 0; i < p1.length; i++) {
+      if (p1[i] != p2[i]) {
+        p1[i] = highlight;
+      }
+    }
+    // save img1's pixels to a new BufferedImage, and return it...
+    // (May require TYPE_INT_ARGB)
+    final BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    out.setRGB(0, 0, w, h, p1, 0, w);
+    return out;
+  }
+
+  public static File getDifferenceImageFile(File img1, File img2) throws Throwable {
+    File ret;
+    ImageIO.write(
+        getDifferenceImage(
+            ImageIO.read(img1),
+            ImageIO.read(img2)),
+        "png",
+        ret = new File("output.png"));
+    return ret;
+  }
+
+  @Test
+  public void testDiffImage() throws IOException {
+    ImageIO.write(
+        getDifferenceImage(
+            ImageIO.read(new File("tests/text/art-latexmath-1.png")),
+            ImageIO.read(new File("tests/text/art-latexmath-2.png"))),
+        "png",
+        new File("output.png"));
+  }
+
+  @Test
+  public void testImages() throws Throwable {
+    File actual = new File("tests/text/art-latexmath-1.png");
+    File expected = new File("tests/text/art-latexmath-2.png");
+    assertThat(
+        actual,
+        asObject().check(
+            callOn(Sandbox.class, "getDifferenceImageFile", expected, actual).$(), similarImpageTo(expected, 0.999999)).$()
+    );
+  }
+
+  private Predicate<File> similarImpageTo(File expected, double threshold) {
+    return Crest.predicate(
+        format("similarImageTo(%s,%s)", expected, threshold),
+        actual -> compareImages(expected, actual) > threshold);
   }
 }
