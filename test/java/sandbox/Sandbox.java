@@ -1,7 +1,10 @@
 package sandbox;
 
 import com.github.dakusui.crest.Crest;
+import com.github.dakusui.crest.utils.printable.Functions;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.scilab.forge.jlatexmath.TeXConstants;
 import org.scilab.forge.jlatexmath.TeXFormula;
 import org.scilab.forge.jlatexmath.TeXIcon;
@@ -20,6 +23,7 @@ import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.github.dakusui.crest.Crest.asObject;
@@ -29,6 +33,9 @@ import static com.github.dakusui.crest.Crest.callOn;
 import static java.lang.String.format;
 
 public class Sandbox {
+  @Rule
+  public TestName name = new TestName();
+
   @Test
   public void latexMath() throws IOException {
     String latex = "$\\sum_{i=0}^{n}x^i$";
@@ -50,7 +57,7 @@ public class Sandbox {
     JLabel jl = new JLabel();
     jl.setForeground(new Color(0, 0, 0));
     icon.paintIcon(jl, g2, 0, 0);
-    File file = new File("target/Example1.png");
+    File file = createFile("target/Example1.png");
     ImageIO.write(image, "png", file.getAbsoluteFile());
   }
 
@@ -158,7 +165,58 @@ public class Sandbox {
     CommandLineConverter.main(new String[] { "tests/text/art-latexmath-1.txt", "-o" });
   }
 
-  public static BufferedImage getDifferenceImage(BufferedImage img1, BufferedImage img2) {
+  @Test
+  public void testDiffImage() throws IOException {
+    ImageIO.write(
+        getDifferenceImage(
+            ImageIO.read(createFile("tests/text/art-latexmath-1.png")),
+            ImageIO.read(createFile("tests/text/art-latexmath-2.png"))),
+        "png",
+        createFile("output.png"));
+  }
+
+  @Test
+  public void testImages() {
+    File actual = createFile("tests/text/art-latexmath-1.png");
+    File expected = createFile("tests/text/art-latexmath-2.png");
+    assertThat(
+        actual,
+        asObject().check(
+            callOn(Sandbox.class, "imageDiff", expected, Functions.THIS, this.name).$(),
+            similarImpageTo(expected, 0.999999)).$());
+  }
+
+  private Function<Object, File> imageDiffWith(File expected, String out) {
+    return Crest.function(
+        String.format("imageDiffWith[%s, out:%s]", expected, out),
+        actual -> {
+          File ret = new File(out);
+          try {
+            imageDiff(expected, (File) actual, ret);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+          return ret;
+        });
+  }
+
+  public static File imageDiff(File img1, File img2, TestName name) throws IOException {
+    File out = createFile(name.getMethodName());
+    ImageIO.write(getDifferenceImage(ImageIO.read(img1), ImageIO.read(img2)), "png", out);
+    return out;
+  }
+
+  private static void imageDiff(File img1, File img2, File out) throws IOException {
+    ImageIO.write(getDifferenceImage(ImageIO.read(img1), ImageIO.read(img2)), "png", out);
+  }
+
+  private Predicate<File> similarImpageTo(File expected, double threshold) {
+    return Crest.predicate(
+        format("similarImageTo(%s,%s)", expected, threshold),
+        actual -> compareImages(expected, actual) > threshold);
+  }
+
+  private static BufferedImage getDifferenceImage(BufferedImage img1, BufferedImage img2) {
     // convert images to pixel arrays...
     final int w = img1.getWidth(),
         h = img1.getHeight(),
@@ -178,41 +236,11 @@ public class Sandbox {
     return out;
   }
 
-  public static File getDifferenceImageFile(File img1, File img2) throws Throwable {
-    File ret;
-    ImageIO.write(
-        getDifferenceImage(
-            ImageIO.read(img1),
-            ImageIO.read(img2)),
-        "png",
-        ret = new File("output.png"));
-    return ret;
-  }
-
-  @Test
-  public void testDiffImage() throws IOException {
-    ImageIO.write(
-        getDifferenceImage(
-            ImageIO.read(new File("tests/text/art-latexmath-1.png")),
-            ImageIO.read(new File("tests/text/art-latexmath-2.png"))),
-        "png",
-        new File("output.png"));
-  }
-
-  @Test
-  public void testImages() throws Throwable {
-    File actual = new File("tests/text/art-latexmath-1.png");
-    File expected = new File("tests/text/art-latexmath-2.png");
-    assertThat(
-        actual,
-        asObject().check(
-            callOn(Sandbox.class, "getDifferenceImageFile", expected, actual).$(), similarImpageTo(expected, 0.999999)).$()
-    );
-  }
-
-  private Predicate<File> similarImpageTo(File expected, double threshold) {
-    return Crest.predicate(
-        format("similarImageTo(%s,%s)", expected, threshold),
-        actual -> compareImages(expected, actual) > threshold);
+  private static File createFile(String s) {
+    return new File(s) {
+      public String toString() {
+        return "file://" + getAbsolutePath();
+      }
+    };
   }
 }
