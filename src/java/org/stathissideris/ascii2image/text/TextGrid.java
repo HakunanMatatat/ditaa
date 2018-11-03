@@ -43,13 +43,13 @@ import static org.stathissideris.ascii2image.text.StringUtils.createTextSplitter
 
 
 /**
- *
  * @author Efstathios Sideris
  */
-public class TextGrid{
-  private static final boolean DEBUG      = false;
-  private static final char    PLAIN_MODE = 'P';
-  public static final  char    LATEX_MODE = 'L';
+public class TextGrid {
+  private static final boolean DEBUG               = false;
+  private static final char    PLAIN_MODE          = 'P';
+  public static final  char    LATEX_MODE          = 'L';
+  public static final  Pattern COLORCODELIKE_REGEX = Pattern.compile("(c.{0,3}|[^c]+)");
 
   private ArrayList<StringBuilder> rows;
   private List<String>             modeRows;
@@ -388,7 +388,6 @@ public class TextGrid{
    * Replaces letters or numbers that are on horizontal or vertical
    * lines, with the appropriate character that will make the line
    * continuous (| for vertical and - for horizontal lines)
-   *
    */
   public void replaceTypeOnLine() {
     int width = getWidth();
@@ -483,9 +482,8 @@ public class TextGrid{
   }
 
   private StringBuilder replaceHumanColorCodes(int rowIndex, StringBuilder in) {
-    Pattern p = Pattern.compile("(c.{0,3}|[^c]+)");
     StringBuilder ret = new StringBuilder(in.length());
-    Iterator<String> i = createTextSplitter(p, in);
+    Iterator<String> i = createTextSplitter(COLORCODELIKE_REGEX, in);
     while (i.hasNext()) {
       String next = i.next();
       if (isInPlainMode(ret.length(), rowIndex) && looksColorCode(next)) {
@@ -979,7 +977,6 @@ public class TextGrid{
   }
 
   /**
-   *
    * A stub looks like that:
    *
    * <pre>
@@ -1184,7 +1181,7 @@ public class TextGrid{
 
   /**
    * Returns the neighbours of a line-cell that are boundaries
-   *  (0 to 2 cells are returned)
+   * (0 to 2 cells are returned)
    *
    * @param cell
    * @return null if the cell is not a line
@@ -1520,7 +1517,6 @@ public class TextGrid{
   }
 
   /**
-   *
    * Fills the continuous area with if c1 characters with c2,
    * flooding from cell x, y
    *
@@ -1622,7 +1618,6 @@ public class TextGrid{
 
 
   /**
-   *
    * Locates and returns the '*' boundaries that we would
    * encounter if we did a flood-fill at <code>seed</code>.
    *
