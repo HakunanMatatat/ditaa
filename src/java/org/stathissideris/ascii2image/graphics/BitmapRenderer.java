@@ -339,18 +339,6 @@ public class BitmapRenderer {
     while (textIt.hasNext()) {
       DiagramText text = textIt.next();
       text.drawOn(g2);
-			/*
-			g2.setFont(text.getFont());
-			if(text.hasOutline()){
-				g2.setColor(text.getOutlineColor());
-				g2.drawString(text.getText(), text.getXPos() + 1, text.getYPos());
-				g2.drawString(text.getText(), text.getXPos() - 1, text.getYPos());
-				g2.drawString(text.getText(), text.getXPos(), text.getYPos() + 1);
-				g2.drawString(text.getText(), text.getXPos(), text.getYPos() - 1);
-			}
-			g2.setColor(text.getColor());
-			g2.drawString(text.getText(), text.getXPos(), text.getYPos());
-			*/
     }
 
     if (options.renderDebugLines() || DEBUG_LINES) {
