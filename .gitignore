@@ -21,5 +21,3 @@ tests/images-expected/
 tests/text/
 tests/build.xml
 target/
-/.lein-failures
-/testImages.png
