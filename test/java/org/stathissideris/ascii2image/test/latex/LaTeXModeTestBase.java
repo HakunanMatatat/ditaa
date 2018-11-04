@@ -63,11 +63,11 @@ abstract class LaTeXModeTestBase extends TestBase {
   }
 
   private String inputFilePath(String s) {
-    return String.format("tests/text/latex/%s/in.txt", s);
+    return String.format("tests/latex/%s/in.txt", s);
   }
 
   private ImageFile expectedImage(String s) {
-    return new ImageFile(String.format("tests/text/latex/%s/expected.png", s));
+    return new ImageFile(String.format("tests/latex/%s/expected.png", s));
   }
 
   private ImageFile actualImage(String s) {
@@ -75,16 +75,16 @@ abstract class LaTeXModeTestBase extends TestBase {
   }
 
   private String actualImagePath(String s) {
-    return String.format("tests/text/latex/%s/actual.png", s);
+    return String.format("tests/latex/%s/actual.png", s);
   }
 
 
   private String diffImagePath(String s) {
-    return String.format("tests/text/latex/%s/diff.png", s);
+    return String.format("tests/latex/%s/diff.png", s);
   }
 
   String[] options(String s) throws IOException {
-    return Files.lines(Paths.get(String.format("tests/text/latex/%s/options.txt", s)))
+    return Files.lines(Paths.get(String.format("tests/latex/%s/options.txt", s)))
         .collect(toList())
         .toArray(new String[0]);
   }
