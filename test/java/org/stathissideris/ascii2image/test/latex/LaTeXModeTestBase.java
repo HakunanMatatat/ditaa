@@ -157,25 +157,18 @@ abstract class LaTeXModeTestBase extends TestBase {
       double percentage = 0;
       try {
         // take buffer data from both image files //
-        DataBuffer dbA = biA.getData().getDataBuffer();
+        DataBuffer dbA = extendIfNecessary(biA, biB).getData().getDataBuffer();
         int sizeA = dbA.getSize();
-        DataBuffer dbB = biB.getData().getDataBuffer();
-        int sizeB = dbB.getSize();
+        DataBuffer dbB = extendIfNecessary(biB, biA).getData().getDataBuffer();
         int count = 0;
-        // compare data-buffer objects //
-        if (sizeA == sizeB) {
+        for (int i = 0; i < sizeA; i++) {
 
-          for (int i = 0; i < sizeA; i++) {
-
-            if (dbA.getElem(i) == dbB.getElem(i)) {
-              count = count + 1;
-            }
-
+          if (dbA.getElem(i) == dbB.getElem(i)) {
+            count = count + 1;
           }
-          percentage = ((double) count) / sizeA;
-        } else {
-          System.out.println("Both the images are not of same size");
+
         }
+        percentage = ((double) count) / sizeA;
       } catch (RuntimeException e) {
         throw e;
       } catch (Exception e) {
@@ -202,7 +195,7 @@ abstract class LaTeXModeTestBase extends TestBase {
           h = img1.getHeight(),
           highlight = Color.MAGENTA.getRGB();
       final int[] p1 = img1.getRGB(0, 0, w, h, null, 0, w);
-      final int[] p2 = img2.getRGB(0, 0, w, h, null, 0, w);
+      final int[] p2 = extendIfNecessary(img2, img1).getRGB(0, 0, w, h, null, 0, w);
       // compare img1 to img2, pixel by pixel. If different, highlight img1's pixel...
       for (int i = 0; i < p1.length; i++) {
         if (p1[i] != p2[i]) {
@@ -216,5 +209,24 @@ abstract class LaTeXModeTestBase extends TestBase {
       return out;
     }
 
+    private static BufferedImage extendIfNecessary(BufferedImage image, BufferedImage another) {
+      if (another.getWidth() > image.getWidth() || another.getHeight() > image.getHeight()) {
+        BufferedImage ret = new BufferedImage(
+            Math.max(image.getWidth(), another.getWidth()),
+            Math.max(image.getHeight(), another.getHeight()),
+            image.getType()
+        );
+        final int p1[] = image.getRGB(
+            0, 0, image.getWidth(), image.getHeight(),
+            null,
+            0, image.getWidth());
+        ret.setRGB(
+            0, 0, image.getWidth(), image.getHeight(),
+            p1,
+            0, image.getWidth());
+        return ret;
+      }
+      return image;
+    }
   }
 }

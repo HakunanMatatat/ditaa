@@ -21,5 +21,6 @@ tests/images-expected/
 pom.xml
 # Files copied by mvn's build procedure
 tests/text/
+tests/latex/
 tests/build.xml
 target/
